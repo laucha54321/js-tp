@@ -4,36 +4,37 @@ const ctx = canvas.getContext('2d');
 canvas.width = 600
 canvas.height = canvas.width
 
-function delay(n){
-    return new Promise(function(resolve){
-        setTimeout(resolve,n*1000);
-    });
-}
 
 class Cell{
     constructor({position,size}){
-        this.position = position
         this.condition = "Green"
         this.width = (canvas.width/size)
+        this.coord = {x:position.x*this.width,y:position.y*this.width}
         this.draw()
+    }
+    setCoord({position}){
+        this.coord = {x:position.x*this.width,y:position.y*this.width}
     }
     draw(){
         ctx.fillStyle = this.condition
-        ctx.fillRect(this.position.x,this.position.y,this.width,this.width)
+        ctx.fillRect(this.coord.x,this.coord.y,this.width,this.width)
         ctx.strokestyle = "Black"
-        ctx.strokeRect(this.position.x,this.position.y,this.width,this.width)
+        ctx.strokeRect(this.coord.x,this.coord.y,this.width,this.width)
     }
 }
 
 class Piece{
-    constructor({position,width}){
-        this.position = position
-        this.width = width
+    constructor({position,size}){
+        this.width = canvas.height/size
+        this.coord = {x:position.x*this.width,y:position.y*this.width}
         this.drawPiece()
+    }
+    setCoord({position}){
+        this.coord = {x:position.x*this.width,y:position.y*this.width}
     }
     drawPiece(){
         ctx.beginPath()
-        ctx.arc(this.position.x+this.width/2,this.position.y+this.width/2,(this.width-10)/2,2*Math.PI,false)
+        ctx.arc(this.coord.x+this.width/2,this.coord.y+this.width/2,(this.width-10)/2,2*Math.PI,false)
         ctx.lineWidth=2
         ctx.fillStyle='Yellow'
         ctx.fill()
@@ -46,13 +47,15 @@ class Board{
         this.size = n
         this.board = []
         this.createBoard()
-        this.piece = new Piece({position:{x:0,y:0},width:canvas.width/this.size})
+        this.piece = new Piece({position:{x:0,y:0},size:this.size})
+        this.position = {x:0,y:0}
+        this.movehistory = [{position:this.position}]
     }
     createBoard(){
         for(let i=0;i<this.size;i++){
             this.board.push([])
             for(let j=0;j<this.size;j++){
-                this.board[i].push(new Cell({position:{x:i*(canvas.width/this.size),y:j*(canvas.height/this.size)},size:this.size}))
+                this.board[i].push(new Cell({position:{x:i,y:j},size:this.size}))
             }
         }
         //console.log(this.board)
@@ -77,9 +80,10 @@ class Board{
         }
     }
     setConditionRed({position}){
+        this.movehistory.push(position)
         this.board[position.x][position.y].condition = "Red"
         this.reDrawBoard()
-        this.piece.position = {x:position.x*this.piece.width,y:position.y*this.piece.width}
+        this.piece.setCoord({position})
         this.piece.drawPiece()
     }
     reDrawBoard(){
@@ -89,38 +93,41 @@ class Board{
             }
         }
     }
-}
-
-
-const board = new Board({n:3})
-
-var i=0
-var j=0
-board.setConditionRed({position:{x:i,y:j}})
-var solutions = []
-
-
-async function solve(){
-    var arr = []
-    arr.push({x:i,y:j})
-    while(!board.isSolved()){
-        await delay(0.5)
-        if(board.checkEmpty({position:{x:i+1,y:j}})){
-            board.setConditionRed({position:{x:i+1,y:j}})
-            i = i+1
-        }else if(board.checkEmpty({position:{x:i-1,y:j}})){
-            board.setConditionRed({position:{x:i-1,y:j}})
-            i = i-1
-        }else if(board.checkEmpty({position:{x:i,y:j+1}})){
-            board.setConditionRed({position:{x:i,y:j+1}})
-            j = j+1
-        }else if(board.checkEmpty({position:{x:i,y:j-1}})){
-            board.setConditionRed({position:{x:i,y:j-1}})
-            j = j-1
+    posibleMoves(){
+        var arrPosibleMoves = []
+        if(this.position.x+1 < this.size){
+            if(board.checkEmpty({position:{x:this.position.x+1,y:this.position.y}})){
+                arrPosibleMoves.push({position:{x:this.position.x+1,y:this.position.y}})
+            }
         }
-        arr.push({x:i,y:j})
+        if(this.position.x-1>=0){
+            if(board.checkEmpty({position:{x:this.position.x-1,y:this.position.y}})){
+                arrPosibleMoves.push({position:{x:this.position.x-1,y:this.position.y}})
+            }
+        }
+        if(this.position.y+1 < this.size){
+            if(board.checkEmpty({position:{x:this.position.x,y:this.position.y+1}})){
+                arrPosibleMoves.push({position:{x:this.position.x,y:this.position.y+1}})
+            }
+        }
+        if(this.position.y-1>=0){
+            if(board.checkEmpty({position:{x:this.position.x,y:this.position.y-1}})){
+                arrPosibleMoves.push({position:{x:this.position.x,y:this.position.y-1}})
+            }
+        }
+        return arrPosibleMoves
     }
-    console.log(arr)
-}
-solve()
 
+}
+
+
+const board = new Board({n:2})
+const boards = []
+var pos = board.posibleMoves()
+
+for(let h=0;h<pos.length;h++){
+    boards.push(new Board({n:2}))
+    boards[h].position = pos[h]
+    console.log(boards[h])
+    console.log(boards[h].posibleMoves())
+}
