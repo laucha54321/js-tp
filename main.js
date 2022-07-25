@@ -69,14 +69,15 @@ class Board{
                 }
             }
         }
+        this.solved = true
         return true
     }
 }
 var boards = [new Board(2,{x:0,y:0})]
 solve(boards[0])
 
-function solve(board_param){
-    var arr = []
+function solve(board_param){ // la funcion se llama a ella misma mientras existan nuevas posibilidades  
+    var arr = []            //  y hace un print de como se va resolviendo el tablero
     var pos = board_param.posibleMoves()
     for(let i=0; i<pos.length;i++){
         var aux = new Board(2,{x:0,y:0})
@@ -84,8 +85,11 @@ function solve(board_param){
         aux.setPiece(pos[i])    // y muevo en ese board una de las posibilidades
         arr.push(aux)          // y lo agrego al array
     }   // genero un nuevo board por cada posibilidad es una ramificacion
-    console.log(arr)
     for(let i=0; i<arr.length;i++){
         solve(arr[i])
+    }
+    for(let i=0;i<arr.length;i++){
+        if(arr[i].isSolved())
+        console.log(arr[i])
     }
 }
