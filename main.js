@@ -1,8 +1,8 @@
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
 
-canvas.width = 600
-canvas.height = canvas.width
+//#region Board
+const cantidadCasillas = 3
+var solution = []
+
 
 class Board{
     constructor(n,position){
@@ -73,14 +73,15 @@ class Board{
         return true
     }
 }
-var boards = [new Board(2,{x:0,y:0})]
+var boards = [new Board(cantidadCasillas,{x:0,y:0})]
+
 solve(boards[0])
 
 function solve(board_param){ // la funcion se llama a ella misma mientras existan nuevas posibilidades  
     var arr = []            //  y hace un print de como se va resolviendo el tablero
     var pos = board_param.posibleMoves()
     for(let i=0; i<pos.length;i++){
-        var aux = new Board(2,{x:0,y:0})
+        var aux = new Board(cantidadCasillas,{x:0,y:0})
         aux.copyAsShallow(board_param) // hago un nuevo Board igual al anterior
         aux.setPiece(pos[i])    // y muevo en ese board una de las posibilidades
         arr.push(aux)          // y lo agrego al array
@@ -89,7 +90,93 @@ function solve(board_param){ // la funcion se llama a ella misma mientras exista
         solve(arr[i])
     }
     for(let i=0;i<arr.length;i++){
-        if(arr[i].isSolved())
+        if(arr[i].isSolved()){
         console.log(arr[i])
+        solution.push(arr[i])
+        }
     }
 }
+//#endregion
+
+//#region Graphics
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = 800
+canvas.height = canvas.width
+
+boardSize = canvas.width/solution.length
+cellsize = Math.floor((boardSize-12)/cantidadCasillas)
+
+class drawBoard{
+    constructor(n,offset){
+        this.size = n
+        this.offset = offset
+        this.arrayBoard = this.createDrawBoard()
+    }
+    createDrawBoard(){
+        var arr = []
+        for(let i=0; i<this.size; i++){
+            arr.push([])
+            for(let j=0;j<this.size;j++){
+                arr[i].push('Green')
+                this.draw('Green',{x:i,y:j})
+            }
+        }
+        return arr
+    }
+    setRed(position){
+        this.arrayBoard[position.x][position.y] = 'Red'
+        this.draw('Red',position)
+    }
+    draw(condition,position){
+        ctx.fillStyle = condition
+        ctx.fillRect(position.x*cellsize+this.offset.x,position.y*cellsize+this.offset.y,cellsize,cellsize)
+        ctx.strokestyle = "Black"
+        ctx.strokeRect(position.x*cellsize+this.offset.x,position.y*cellsize+this.offset.y,cellsize,cellsize)
+    }
+}
+function createBoards(n){
+    var arr = []
+    for(let i=0; i<n; i++){
+        arr.push([])
+        for(let j=0;j<n;j++){
+            arr[i].push(new drawBoard(n,{x:i*boardSize,y:j*boardSize}))
+        }
+
+    }
+    return arr
+}
+var boardsss = createBoards(Math.floor(Math.sqrt(solution.length))+1)
+
+//#endregion
+
+
+//#region display solution
+function delay(n){
+    return new Promise(function(resolve){
+        setTimeout(resolve,n*1000);
+    });
+}
+
+
+async function displaySolution(){
+    for(let t=0;t<solution[0].moveHistory.length;t++){
+        for(let i=0;i<Math.floor(Math.sqrt(solution.length))+1;i++){
+            for(let j=0;j<Math.floor(Math.sqrt(solution.length))+1;j++){
+                if((i+j)<4){
+                    await delay(0.2)
+                    boardsss[i][j].setRed(solution[(i*3)+j].moveHistory[t])
+                    console.log((i*3)+j)
+
+                }
+            }
+        }
+    }
+}
+
+displaySolution()
+
+
+
+//#endregion
