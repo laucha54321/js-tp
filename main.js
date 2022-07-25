@@ -1,6 +1,8 @@
 
 //#region Board
-const cantidadCasillas = 3
+
+// Primero Calcular todo y despues mostrarlo xq para mostrarlo le puse delay
+const cantidadCasillas = 4
 var solution = []
 
 
@@ -73,15 +75,17 @@ class Board{
         return true
     }
 }
-var boards = [new Board(cantidadCasillas,{x:0,y:0})]
+var boards = [new Board(cantidadCasillas,{x:1,y:1})]
 
 solve(boards[0])
+console.log("There where", solution.length,"solutions found")
+
 
 function solve(board_param){ // la funcion se llama a ella misma mientras existan nuevas posibilidades  
     var arr = []            //  y hace un print de como se va resolviendo el tablero
     var pos = board_param.posibleMoves()
     for(let i=0; i<pos.length;i++){
-        var aux = new Board(cantidadCasillas,{x:0,y:0})
+        var aux = new Board(cantidadCasillas,{x:1,y:1})
         aux.copyAsShallow(board_param) // hago un nuevo Board igual al anterior
         aux.setPiece(pos[i])    // y muevo en ese board una de las posibilidades
         arr.push(aux)          // y lo agrego al array
@@ -96,17 +100,20 @@ function solve(board_param){ // la funcion se llama a ella misma mientras exista
         }
     }
 }
+
+
+
 //#endregion
 
 //#region Graphics
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = 800
+canvas.width = 1200
 canvas.height = canvas.width
 
 boardSize = canvas.width/solution.length
-cellsize = Math.floor((boardSize-12)/cantidadCasillas)
+cellsize = Math.floor((boardSize-2)/cantidadCasillas)
 
 class drawBoard{
     constructor(n,offset){
@@ -160,7 +167,7 @@ function delay(n){
 }
 
 
-async function displaySolution(){
+async function displaySolution(){ 
     for(let t=0;t<solution[0].moveHistory.length;t++){
         for(let i=0;i<Math.floor(Math.sqrt(solution.length))+1;i++){
             for(let j=0;j<Math.floor(Math.sqrt(solution.length))+1;j++){
@@ -179,3 +186,4 @@ displaySolution()
 
 
 //#endregion
+
