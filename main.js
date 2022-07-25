@@ -166,8 +166,7 @@ async function displaySolution(){
             for(let j=0;j<Math.floor(Math.sqrt(solution.length))+1;j++){
                 if((i+j)<4){
                     await delay(0.2)
-                    boardsss[i][j].setRed(solution[(i*3)+j].moveHistory[t])
-                    console.log((i*3)+j)
+                    boardsss[i][j].setRed(solution[(i*(Math.floor(Math.sqrt(solution.length))+1))+j].moveHistory[t])
 
                 }
             }
